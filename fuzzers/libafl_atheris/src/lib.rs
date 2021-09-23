@@ -9,6 +9,8 @@ use std::{
     path::PathBuf,
 };
 
+use std::net::{SocketAddr};
+
 use libafl::{
     bolts::{
         current_nanos,
@@ -121,34 +123,16 @@ pub fn LLVMFuzzerRunDriver(
 
     let workdir = env::current_dir().unwrap();
 
-    let yaml = load_yaml!("clap-config.yaml");
-    let matches = App::from(yaml).get_matches();
-
-    let cores = parse_core_bind_arg(matches.value_of("cores").unwrap())
+    let cores = parse_core_bind_arg("1")
         .expect("No valid core count given!");
-    let broker_port = matches
-        .value_of("broker_port")
-        .map(|s| s.parse().expect("Invalid broker port"))
-        .unwrap_or(1337);
-    let remote_broker_addr = matches
-        .value_of("remote_broker_addr")
-        .map(|s| s.parse().expect("Invalid broker address"));
-    let input_dirs: Vec<PathBuf> = matches
-        .values_of("input")
-        .map(|v| v.map(PathBuf::from).collect())
-        .unwrap_or_default();
-    let output_dir = matches
-        .value_of("output")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| workdir.clone());
-    let token_files: Vec<&str> = matches
-        .values_of("tokens")
-        .map(|v| v.collect())
-        .unwrap_or_default();
-    let timeout_ms = matches
-        .value_of("timeout")
-        .map(|s| s.parse().expect("Invalid timeout"))
-        .unwrap_or(10000);
+    let broker_port = 1337;
+    let remote_broker_addr: Option<SocketAddr> = Some("127.0.0.1:1337".parse()
+        .expect("lol"));    
+    let path = PathBuf::from("/Users/jhertz/in");
+    let input_dirs: Vec<PathBuf> = vec![path];
+    let output_dir = PathBuf::from("/Users/jhertz/out");
+    let token_files: Vec<&str> = vec!["/Users/jhertz/tokens"];
+    let timeout_ms = 10000;
     // let cmplog_enabled = matches.is_present("cmplog");
 
     println!("Workdir: {:?}", workdir.to_string_lossy().to_string());
